@@ -3,9 +3,10 @@ from selenium.webdriver.chrome.options import Options
 import logging
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
+import datetime
 
 
-class JRDriver:
+class JrDriver:
     def __init__(self, options, default_wait):
         self.options = options
         self.default_wait = default_wait
@@ -13,8 +14,18 @@ class JRDriver:
         self.driver.implicitly_wait(self.default_wait)
 
     def setup(self):
+        if type(self.options) == Options:
+            return webdriver.Chrome(options=self.options)
+
         chrome_options = Options()
-        chrome_options.add_argument(self.options)
+
+        if type(self.options) == list:
+            for option in self.options:
+                chrome_options.add_argument(option)
+        elif type(self.options) == str:
+            chrome_options.add_argument(self.options)
+        else:
+            raise TypeError('Invalid Options object. Must be of type Options, List, or String')
         return webdriver.Chrome(options=chrome_options)
 
     def input_value(self, x_path, value):
@@ -39,8 +50,12 @@ class JRDriver:
             web_element.click()
             return True
         except NoSuchElementException:
+            self.driver.save_screenshot('./screenshots/'+str(datetime.datetime.now())+'.png')
             logging.warning('Element with xpath "{}" not found. Unable to click on element.'.format(x_path))
             return False
+
+    def screenshot(self, path='./screenshots/' + str(datetime.datetime.now()) + '.png'):
+        self.driver.save_screenshot(path)
 
     def tear_down(self):
         self.driver.close()
@@ -62,3 +77,4 @@ class JRDriver:
         self.input_value(user_x_path, user)
         self.input_value(pwd_x_path, pwd)
         self.click_element_if_exists(enter_x_path)
+
