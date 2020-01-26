@@ -1,9 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import logging
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 import datetime
+import logging
+
+
+logger = logging.getLogger()
 
 
 class JrDriver:
@@ -36,9 +39,10 @@ class JrDriver:
         web_elements = self.driver.find_elements_by_xpath(x_path)
         if web_elements:
             web_element = web_elements[0]
+            if len(web_elements) > 1:
+                logger.warning('xpath:{} returned multiple web elements: {}'.format(x_path, web_elements))
             return web_element
         else:
-            # logging.error('Element with xpath "{}" not found.'.format(xpath))
             raise NoSuchElementException('Element with xpath "{}" not found.'.format(x_path))
 
     def goto(self, url):
